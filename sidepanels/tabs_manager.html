@@ -1,0 +1,49 @@
+<!doctype html>
+<html>
+	<head>
+		<title>Tabs Inspector</title>
+		<link rel="stylesheet" href="./tabs_manager.css" />
+	</head>
+	<body>
+		<div id="windowList">
+			<!-- WindowItems Here -->
+		</div>
+		<template id="windowItem">
+			<div class="window-item">
+				<div class="window-status-wrapper">
+					<button class="window_refresh">Refresh</button>
+					<button class="window_add_group">Add group</button>
+				</div>
+				<div id="groupList">
+					<!-- GroupItems Here -->
+				</div>
+				<div id="tabList">
+					<!-- TabItems Here -->
+				</div>
+			</div>
+		</template>
+		<template id="tabItem">
+			<div class="tab-item">
+				<img class="tab_img"></img>
+				<button class="activate_tab_button">tab</button>
+				<button class="settings_tab_button">s</button>
+				<button class="remove_tab_button">x</button>
+			</div>
+		</template>
+		<template id="groupItem">
+			<div class="group-item">
+				<table><tbody><tr>
+					<td><button class="activate_group_button">tab</button></td>
+					<td><div class="group-tab-count">0</div></td>
+					<td><button class="settings_group_button">s</button></td>
+				</tr></tbody></table>
+				<div class="group-item-settings" hidden>
+					<input type="text" class="group_title" />
+					<button class="remove_group_button">Remove group</button>
+				</div>
+			</div>
+		</template>
+		<div id="log"></div>
+		<script src="tabs_manager.js"></script>
+	</body>
+</html>

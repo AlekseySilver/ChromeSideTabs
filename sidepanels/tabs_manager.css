@@ -1,0 +1,157 @@
+.window-item {
+	background-color: #a0a0a0;
+}
+
+.window-id-wrapper {
+	font-style: italic;
+	display: inline-block;
+}
+
+
+.tab-item {
+	background-color: #eeeeee;
+	margin: 2px;
+	padding: 1px;
+}
+
+.wrapper {
+	margin: 1px;
+}
+
+.tab-actions-wrapper {
+	display: inline-block;
+}
+
+.tab_index {
+	width: 20px;
+}
+
+.tab_window_id {
+	width: 80px;
+}
+
+#log {
+	background-color: #eeaaee;
+	margin: 20px;
+	padding: 8px;
+}
+
+.input-group {
+	display: flex;
+	justify-content: space-between;
+}
+
+.label {
+	display: inline-block;
+}
+
+.tab_title,
+.tab_url,
+#new_window_url,
+#window_id_new,
+#url_new {
+	width: 90%;
+}
+
+.new-window-wrapper {
+	background-color: #eeeebb;
+	margin: 20px;
+	padding: 8px;
+}
+
+.new-tab-wrapper {
+	background-color: #eeeeaa;
+	margin: 20px;
+	padding: 8px;
+}
+
+h3 {
+	text-align: center;
+	margin: 8px;
+}
+
+.window_left,
+.window_top,
+.window_width,
+.window_height,
+#new_window_left,
+#new_window_top,
+#new_window_width,
+#new_window_height {
+	width: 50px;
+}
+
+.new-window-status-wrapper {
+	display: inline-block;
+}
+
+.actions-wrapper {
+	margin: 20px;
+}
+
+.activate_tab_button {
+	max-height: 20px;
+	height: 20px; 
+	width: 75%;
+	text-align: start; 
+	white-space: nowrap; 
+	text-overflow: ellipsis;
+	overflow: hidden;
+}
+
+.settings_tab_button {
+	max-height: 20px;
+	height: 20px;
+	width: 20px;
+	white-space: nowrap; 
+	text-overflow: ellipsis;
+	overflow: hidden;
+	background-color: #bfffb9;
+}
+
+.remove_tab_button {
+	max-height: 20px;
+	height: 20px;
+	width: 20px;
+	white-space: nowrap; 
+	text-overflow: ellipsis;
+	overflow: hidden;
+	background-color: #ffaeae;
+}
+
+.tab_img {
+	max-height: 15px;
+	height: 15px;
+	width: 20px;
+	object-fit: contain;
+}
+
+
+.activate_group_button {
+	max-height: 20px;
+	height: 20px; 
+	width: 75%;
+	text-align: start; 
+	white-space: nowrap; 
+	text-overflow: ellipsis;
+	overflow: hidden;
+}
+
+.settings_group_button {
+	max-height: 20px;
+	height: 20px;
+	width: 20px;
+	white-space: nowrap; 
+	text-overflow: ellipsis;
+	overflow: hidden;
+	background-color: #bfffb9;
+}
+
+.remove_group_button {
+	max-height: 20px;
+	height: 20px;
+	white-space: nowrap; 
+	text-overflow: ellipsis;
+	background-color: #ffaeae;
+}
+
