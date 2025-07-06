@@ -126,7 +126,6 @@ h3 {
 	object-fit: contain;
 }
 
-
 .activate_group_button {
 	max-height: 20px;
 	height: 20px; 
@@ -153,5 +152,10 @@ h3 {
 	white-space: nowrap; 
 	text-overflow: ellipsis;
 	background-color: #ffaeae;
+}
+
+td button {
+	width: 100px;
+	box-sizing: border-box;
 }
 

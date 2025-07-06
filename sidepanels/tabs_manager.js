@@ -29,22 +29,25 @@ const tabTemplate = document.getElementById('tabItem').content;
 const groupTemplate = document.getElementById('groupItem').content;
 
 async function loadWindowList() {
-	appendToLog("groups:");
+	// group list
+	// appendToLog("groups:");
 
 	var items = await storage.get('SideTabGroups');
 	if (items.SideTabGroups) {
-		appendToLog("items.SideTabGroups length: " + Object.keys(items.SideTabGroups).length);
+		// appendToLog("items.SideTabGroups length: " + Object.keys(items.SideTabGroups).length);
 		groups = {};
 		for (const groupId of Object.keys(items.SideTabGroups)) {
-			appendToLog("groupId = " + groupId + " t=" + typeof groupId);
+			// appendToLog("groupId = " + groupId + " t=" + typeof groupId);
 			if (isFinite(Number(groupId))) {
-				appendToLog("isInteger");
+				// appendToLog("isInteger");
 				groups[groupId] = items.SideTabGroups[groupId];
 			}
 		}
 	}
-	appendToLog("groups length: " + Object.keys(groups).length);
+	// appendToLog("groups length: " + Object.keys(groups).length);
+	renderGroups();
 
+	// window list
 	const windowList = await chrome.windows.getAll({ populate: true });
 	tabs = {};
 	tabIds = [];
@@ -67,6 +70,17 @@ async function loadWindowList() {
 	}
 }
 
+function renderGroups() {
+	const groupList = document.getElementById('groupList');
+	groupList.innerHTML = '';
+	for (const groupId of Object.keys(groups)) {
+		const groupItem = document.importNode(groupTemplate, true).children[0];
+		renderGroup(groupId, groupItem);
+		registerGroupEvents(groupId, groupItem);
+		groupList.appendChild(groupItem);
+	}
+}
+
 function renderWindow(window, windowItem) {
 	windowItem.id = `window_${window.id}`;
 	// windowItem.querySelector('.window_left').id = `left_${window.id}`;
@@ -85,14 +99,6 @@ function renderWindow(window, windowItem) {
 	// windowItem.querySelector('.window_current').checked =
 	// 	window.id == currentWindowId;
 
-	windowItem.querySelector('#groupList').innerHTML = '';
-	for (const groupId of Object.keys(groups)) {
-		const groupItem = document.importNode(groupTemplate, true).children[0];
-		renderGroup(groupId, groupItem);
-		registerGroupEvents(groupId, groupItem);
-		windowItem.querySelector('#groupList').appendChild(groupItem);
-	}
-
 	windowItem.querySelector('#tabList').innerHTML = '';
 	for (let tab of window.tabs) {
 		const tabItem = document.importNode(tabTemplate, true).children[0];
@@ -100,6 +106,10 @@ function renderWindow(window, windowItem) {
 		registerTabEvents(tab, tabItem);
 		windowItem.querySelector('#tabList').appendChild(tabItem);
 	}
+}
+
+async function saveGroups() {
+	await storage.set({ SideTabGroups: groups });
 }
 
 async function addNewGroup() {
@@ -115,18 +125,18 @@ async function addNewGroup() {
 
 	appendToLog("addNewGroup:" + Object.keys(groups).length);
 	appendToLog(groups);
-	await storage.set({ SideTabGroups: groups });
+	await saveGroups();
 	return nextGroupId;
 }
 
-async function addNewGroupItem(windowItem) {
+async function addNewGroupItem() {
 	// appendToLog("addNewGroupItem");
 	const groupId = await addNewGroup();
 	const groupItem = document.importNode(groupTemplate, true).children[0];
 	groupItem.id = `groupItem_${groupId}`;
 	renderGroup(groupId, groupItem);
 	registerGroupEvents(groupId, groupItem);
-	windowItem.querySelector('#groupList').appendChild(groupItem);
+	document.getElementById('groupList').appendChild(groupItem);
 }
 
 function registerWindowEvents(window, windowItem) {
@@ -134,12 +144,6 @@ function registerWindowEvents(window, windowItem) {
 		.querySelector('.window_refresh')
 		.addEventListener('click', function () {
 			refreshWindow(window.id);
-		});
-
-	windowItem
-		.querySelector('.window_add_group')
-		.addEventListener('click', function () {
-			addGroupWindow(window.id);
 		});
 
 	// windowItem
@@ -190,8 +194,14 @@ function renderTab(tab, tabItem) {
 }
 
 function renderGroup(groupId, groupItem) {
+	const group = groups[groupId];
+
+	const button = groupItem.querySelector('.activate_group_button');
+	button.textContent = group.name;
+	button.style.backgroundColor = (groupId == currentGroupId) ? "#b0b8ff" : null;
+
 	groupItem.querySelector('.group-tab-count').innerText = "" + groupId;
-	// TODO check active to color
+
 }
 
 function registerTabEvents(tab, tabItem) {
@@ -245,18 +255,29 @@ function registerGroupEvents(groupId, groupItem) {
 		.querySelector('.activate_group_button')
 		.addEventListener('click', function () {
 			currentGroupId = groupId;
+			renderGroups();
 		});
 	groupItem
 		.querySelector('.settings_group_button')
-		.addEventListener('click', function () {
+		.addEventListener('click', async function () {
 			const settings = groupItem.querySelector('.group-item-settings');
 			settings.hidden = !settings.hidden;
+			const group_title = groupItem.querySelector('.group_title');
+			if (settings.hidden) {
+				groups[groupId].name = group_title.value;
+				await saveGroups();
+			}
+			else {
+				group_title.value = groups[groupId].name;
+			}
+			renderGroup(groupId, groupItem);
 		});
 	groupItem
 		.querySelector('.remove_group_button')
-		.addEventListener('click', function () {
-			// TODO remove group
-			appendToLog("TODO remove group");
+		.addEventListener('click', async function () {
+			delete groups[groupId];
+			await saveGroups();
+			renderGroups();
 		});
 	// tabItem
 	// 	.querySelector('.tab_active')
@@ -486,6 +507,12 @@ async function createWindow() {
 // 	.getElementById('create_window_button')
 // 	.addEventListener('click', createWindow);
 
+
+document
+	.getElementById('window_add_group')
+	.addEventListener('click', addNewGroupItem);
+
+
 async function refreshWindow(windowId) {
 	const window = await chrome.windows.get(windowId);
 	const tabList = await chrome.tabs.query({ windowId });
@@ -495,12 +522,6 @@ async function refreshWindow(windowId) {
 	renderWindow(window, output);
 }
 
-async function addGroupWindow(windowId) {
-	appendToLog("addGroupWindow");
-	const output = document.getElementById('window_' + windowId);
-	if (!output) return;
-	await addNewGroupItem(output);
-}
 
 function updateWindowData(id) {
 	const retval = {

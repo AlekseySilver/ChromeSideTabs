@@ -6,7 +6,7 @@
 	</head>
 	<body>
 		<div class="group-wrapper">
-			<button class="window_add_group">Add group</button>
+			<button id="window_add_group">Add group</button>
 			<div id="groupList">
 				<!-- GroupItems Here -->
 			</div>
@@ -35,14 +35,24 @@
 		<template id="groupItem">
 			<div class="group-item">
 				<table><tbody><tr>
-					<td><button class="activate_group_button">tab</button></td>
+					<td width="80%"><button class="activate_group_button">tab</button></td>
 					<td><div class="group-tab-count">0</div></td>
 					<td><button class="settings_group_button">s</button></td>
 				</tr></tbody></table>
 				<div class="group-item-settings" hidden>
 					<input type="text" class="group_title" />
 					<button class="remove_group_button">Remove group</button>
+					<button class="add_url_button">Add url</button>
+					<div id="urlList">
+						<!-- Url1Items Here -->
+					</div>
 				</div>
+			</div>
+		</template>
+		<template id="urlItem">
+			<div class="url-item">
+				<input type="text" class="url_filter" />
+				<button class="remove_url_button">x</button>
 			</div>
 		</template>
 		<div id="log"></div>
