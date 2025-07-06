@@ -14,5 +14,5 @@
 		"48": "images/icon-48.png",
 		"128": "images/icon-128.png"
 	},
-	"permissions": ["sidePanel", "tabs", "favicon", "contextMenus"]
+	"permissions": ["sidePanel", "tabs", "favicon", "storage"]
 }

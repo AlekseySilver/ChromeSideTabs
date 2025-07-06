@@ -1,17 +1,16 @@
 const settingPopupPage = '../popups/popup.html';
 
+const storage = chrome.storage.local;
+
 let tabs = {};
 let tabIds = [];
 
 let focusedWindowId = undefined;
 let currentWindowId = undefined;
-let nextGroupId = 0;
-let currentGroupId = undefined;
 
-function getNextGroupId() {
-	nextGroupId += 1
-	return nextGroupId;
-}
+let currentGroupId = undefined;
+let groups = {};
+
 
 async function bootstrap() {
 	const currentWindow = await chrome.windows.getCurrent();
@@ -30,6 +29,22 @@ const tabTemplate = document.getElementById('tabItem').content;
 const groupTemplate = document.getElementById('groupItem').content;
 
 async function loadWindowList() {
+	appendToLog("groups:");
+
+	var items = await storage.get('SideTabGroups');
+	if (items.SideTabGroups) {
+		appendToLog("items.SideTabGroups length: " + Object.keys(items.SideTabGroups).length);
+		groups = {};
+		for (const groupId of Object.keys(items.SideTabGroups)) {
+			appendToLog("groupId = " + groupId + " t=" + typeof groupId);
+			if (isFinite(Number(groupId))) {
+				appendToLog("isInteger");
+				groups[groupId] = items.SideTabGroups[groupId];
+			}
+		}
+	}
+	appendToLog("groups length: " + Object.keys(groups).length);
+
 	const windowList = await chrome.windows.getAll({ populate: true });
 	tabs = {};
 	tabIds = [];
@@ -70,6 +85,14 @@ function renderWindow(window, windowItem) {
 	// windowItem.querySelector('.window_current').checked =
 	// 	window.id == currentWindowId;
 
+	windowItem.querySelector('#groupList').innerHTML = '';
+	for (const groupId of Object.keys(groups)) {
+		const groupItem = document.importNode(groupTemplate, true).children[0];
+		renderGroup(groupId, groupItem);
+		registerGroupEvents(groupId, groupItem);
+		windowItem.querySelector('#groupList').appendChild(groupItem);
+	}
+
 	windowItem.querySelector('#tabList').innerHTML = '';
 	for (let tab of window.tabs) {
 		const tabItem = document.importNode(tabTemplate, true).children[0];
@@ -79,15 +102,31 @@ function renderWindow(window, windowItem) {
 	}
 }
 
-function addNewGroupItem(windowItem) {
-	// appendToLog("addNewGroupItem");
+async function addNewGroup() {
+	let nextGroupId = 0;
+	for (const groupId of Object.keys(groups)) {
+		const id = Number(groupId)
+		if (isFinite(id) && id > nextGroupId) {
+			nextGroupId = id;
+		}
+	}
+	nextGroupId += 1;
+	groups[nextGroupId] = { name: `new group ${nextGroupId}` };
 
+	appendToLog("addNewGroup:" + Object.keys(groups).length);
+	appendToLog(groups);
+	await storage.set({ SideTabGroups: groups });
+	return nextGroupId;
+}
+
+async function addNewGroupItem(windowItem) {
+	// appendToLog("addNewGroupItem");
+	const groupId = await addNewGroup();
 	const groupItem = document.importNode(groupTemplate, true).children[0];
-	groupItem.id = `groupItem_${getNextGroupId()}`;
-	renderGroup(groupItem);
-	registerGroupEvents(groupItem);
+	groupItem.id = `groupItem_${groupId}`;
+	renderGroup(groupId, groupItem);
+	registerGroupEvents(groupId, groupItem);
 	windowItem.querySelector('#groupList').appendChild(groupItem);
-	
 }
 
 function registerWindowEvents(window, windowItem) {
@@ -150,8 +189,8 @@ function renderTab(tab, tabItem) {
 	// tabItem.querySelector('.tab_active').checked = tab.active;
 }
 
-function renderGroup(groupItem) {
-	groupItem.querySelector('.group-tab-count').innerText = "1";
+function renderGroup(groupId, groupItem) {
+	groupItem.querySelector('.group-tab-count').innerText = "" + groupId;
 	// TODO check active to color
 }
 
@@ -201,11 +240,11 @@ function registerTabEvents(tab, tabItem) {
 	// 	});
 }
 
-function registerGroupEvents(groupItem) {
+function registerGroupEvents(groupId, groupItem) {
 	groupItem
 		.querySelector('.activate_group_button')
 		.addEventListener('click', function () {
-			currentGroupId = groupItem.id;
+			currentGroupId = groupId;
 		});
 	groupItem
 		.querySelector('.settings_group_button')
@@ -281,7 +320,7 @@ function createTab() {
 async function updateAll() {
 	try {
 		for (let i = 0; i < tabIds.length; i++) {
-		await chrome.tabs.update(tabIds[i], updateTabData(tabIds[i]));
+			await chrome.tabs.update(tabIds[i], updateTabData(tabIds[i]));
 		}
 	} catch (e) {
 		alert(e);
@@ -292,7 +331,7 @@ async function moveAll() {
 	// appendToLog('moving all');
 	try {
 		for (let i = 0; i < tabIds.length; i++) {
-		await chrome.tabs.move(tabIds[i], moveTabData(tabIds[i]));
+			await chrome.tabs.move(tabIds[i], moveTabData(tabIds[i]));
 		}
 	} catch (e) {
 		alert(e);
@@ -460,7 +499,7 @@ async function addGroupWindow(windowId) {
 	appendToLog("addGroupWindow");
 	const output = document.getElementById('window_' + windowId);
 	if (!output) return;
-	addNewGroupItem(output);
+	await addNewGroupItem(output);
 }
 
 function updateWindowData(id) {
