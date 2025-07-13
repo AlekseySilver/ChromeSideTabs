@@ -27,6 +27,7 @@ function isInt(i) {
 const windowTemplate = document.getElementById('windowItem').content;
 const tabTemplate = document.getElementById('tabItem').content;
 const groupTemplate = document.getElementById('groupItem').content;
+const urlTemplate = document.getElementById('urlItem').content;
 
 async function loadWindowList() {
 	// group list
@@ -179,17 +180,20 @@ function renderTab(tab, tabItem) {
 		tabItem.querySelector('.tab_img').src = tab.favIconUrl;
 	}
 
+	const tab_url = tabItem.querySelector('.tab_url')
+	tab_url.id = `url_${tab.id}`;
+	tab_url.value = tab.url;
+
 	// tabItem.querySelector('.tab_index').id = `index_${tab.id}`;
 	// tabItem.querySelector('.tab_window_id').id = `windowId_${tab.id}`;
 	// tabItem.querySelector('.tab_title').id = `title_${tab.id}`;
-	// tabItem.querySelector('.tab_url').id = `url_${tab.id}`;
+	
 	// tabItem.querySelector('.tab_active').id = `active_${tab.id}`;
 
 	// tabItem.querySelector('.tab_id').innerText = `TabId: ${tab.id}`;
 	// tabItem.querySelector('.tab_index').value = tab.index;
 	// tabItem.querySelector('.tab_window_id').value = tab.windowId;
 	// tabItem.querySelector('.tab_title').value = tab.title;
-	// tabItem.querySelector('.tab_url').value = tab.url;
 	// tabItem.querySelector('.tab_active').checked = tab.active;
 }
 
@@ -202,6 +206,20 @@ function renderGroup(groupId, groupItem) {
 
 	groupItem.querySelector('.group-tab-count').innerText = "" + groupId;
 
+
+	if ('urls' in group) {
+		const urlList = groupItem.querySelector('#urlList');
+		for (const url of group.urls) {
+			const urlItem = document.importNode(urlTemplate, true).children[0];
+			renderUrl(url, urlItem);
+			registerUrlEvents(url, urlItem);
+			urlList.appendChild(urlItem);
+		}
+	}
+}
+
+function renderUrl(url, urlItem) {
+	urlItem.querySelector('.url_filter').value = url;
 }
 
 function registerTabEvents(tab, tabItem) {
@@ -229,12 +247,14 @@ function registerTabEvents(tab, tabItem) {
 	tabItem
 		.querySelector('.settings_tab_button')
 		.addEventListener('click', function () {
-				chrome.windows.create({
-					url: chrome.runtime.getURL(settingPopupPage),
-					type: "popup",
-					width: 400,
-					height: 600
-				});
+			const settings = tabItem.querySelector('.tab-item-settings');
+			settings.hidden = !settings.hidden;
+				// chrome.windows.create({
+				// 	url: chrome.runtime.getURL(settingPopupPage),
+				// 	type: "popup",
+				// 	width: 400,
+				// 	height: 600
+				// });
 		});
 	tabItem
 		.querySelector('.remove_tab_button')
@@ -279,6 +299,17 @@ function registerGroupEvents(groupId, groupItem) {
 			await saveGroups();
 			renderGroups();
 		});
+	groupItem
+		.querySelector('.add_url_button')
+		.addEventListener('click', async function () {
+			const group = groups[groupId];
+			if ('urls' in group) {
+				group.urls = [];
+			}
+			appendToLog(group.urls);
+			group.urls.push("set url");
+			renderGroup(groupId, groupItem);
+		});
 	// tabItem
 	// 	.querySelector('.tab_active')
 	// 	.addEventListener('change', function (event) {
@@ -288,6 +319,16 @@ function registerGroupEvents(groupId, groupItem) {
 	// 	});
 }
 
+function registerUrlEvents(url, urlItem) {
+	urlItem
+		.querySelector('.remove_url_button')
+		.addEventListener('click', async function () {
+			// TODO
+			// delete groups[groupId];
+			// await saveGroups();
+			// renderGroups();
+		});
+}
 
 function updateTabData(id) {
 	const retval = {
